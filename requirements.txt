@@ -1,4 +1,5 @@
 -e git+git://github.com/AstroHuntsman/gunagala@image_sim#egg=gunagala
 astropy
 photutils
-numpy 
+numpy
+astroquery
