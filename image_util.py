@@ -124,6 +124,8 @@ def generate_noiseless_image(exptime=0.005 * u.second,
         output_fits_file (bool, optional): Write out noiseless fits image.
         write_region_file (bool, optional): Write out simple RA,Dec text file for DS9 region overlay
     """
+
+    exptime = exptime.to(u.second)
     coordinate_table = Simbad.query_object(field_target_name)
     field_coordinates = SkyCoord(coordinate_table['RA'][0],
                                  coordinate_table['DEC'][0],
@@ -159,8 +161,7 @@ def generate_noiseless_image(exptime=0.005 * u.second,
     if output_fits_file:
         image_data.write(output_fits_filename, overwrite=True)
 
-    real_data = imager.make_image_real(image_data, exptime)
-    real_data.write('out_real.fits', overwrite=True)
+    return(image_data, imager)
 
 
 if __name__ == '__main__':
