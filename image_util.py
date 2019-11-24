@@ -1,3 +1,5 @@
+"""Image utilities.
+"""
 from astroquery.vizier import Vizier
 from astroquery.simbad import Simbad
 
@@ -23,7 +25,20 @@ def get_star_table(width,
                    mag='Gmag',
                    mag_limit="<10",
                    row_limit=-1):
+    """Query Vizier catalog for stars of a given brightness.
 
+    Args:
+        width (astropy.Quantity): Field width in u.deg units.
+        height (astropy.Quantity): Field width in u.deg units.
+        field_coordinates (SkyCoord): Location of field centre.
+        catalog (list, optional): List of catalog names to query
+        mag (str, optional): Filter to cut on.
+        mag_limit (str, optional): Filter magnitude limit criteria.
+        row_limit (int, optional): Number of stars to use. -1 is unlimited.
+
+    Returns:
+        astropy.Table: Table of RA, Dec, Magnitude
+    """
     v = Vizier(columns=['_RAJ2000', '_DEJ2000', mag],
                column_filters={mag: mag_limit},
                row_limit=row_limit)
@@ -36,9 +51,21 @@ def get_star_table(width,
     return(result[0])
 
 
-def make_noiseless_image(imager,
-                         imager_filter_name,
-                         star_table):
+def make_noiseless_data(imager,
+                        imager_filter_name,
+                        star_table):
+    """Generate noiseless data of star field. Based upon
+    gunagala.make_noiseless_data, which currently doesn't do PSFs
+    very well.
+
+    Args:
+        imager (gunagala.Imager): Instance of a gunagala imaging system.
+        imager_filter_name (str): Filter to use for noiseless data.
+        star_table (astropy.Table): Table of star coordinates and magnitudes.
+
+    Returns:
+        CCDData: Noiseless imaging data.
+    """
     ucac_filter_name = f'{ imager_filter_name.upper() }mag'
 
     electrons = np.zeros((imager.wcs._naxis2,
@@ -75,16 +102,28 @@ def make_noiseless_image(imager,
     return(noiseless)
 
 
-def create_noiseless_image(exptime=0.005 * u.second,
-                           snr_limit=1.,
-                           gunagala_imager_name='one_zwo_canon_full_moon',
-                           gunagala_config_filename='/Users/lspitler/prog/GitHub/huntsman-ms/resources/performance_ms.yaml',
-                           imager_filter_name='g',
-                           field_target_name='fornax cluster',
-                           output_fits_filename='out_noiseless.fits',
-                           output_fits_file=False,
-                           write_region_file=False):
+def generate_noiseless_image(exptime=0.005 * u.second,
+                             snr_limit=1.,
+                             gunagala_imager_name='one_zwo_canon_full_moon',
+                             gunagala_config_filename='/Users/lspitler/prog/GitHub/huntsman-ms/resources/performance_ms.yaml',
+                             imager_filter_name='g',
+                             field_target_name='fornax cluster',
+                             output_fits_filename='out_noiseless.fits',
+                             output_fits_file=False,
+                             write_region_file=False):
+    """Summary
 
+    Args:
+        exptime (astropy.Quantity, optional): Exposure time in u.seconds
+        snr_limit (float, optional): Signal-to-noise lower limit for selecting stars.
+        gunagala_imager_name (str, optional): name of gunagala Imager to use.
+        gunagala_config_filename (str, optional): Filepath to gunagala yaml config.
+        imager_filter_name (str, optional): Name of filter to use.
+        field_target_name (str, optional): Name of astronomical target.
+        output_fits_filename (str, optional): Output filename of noiseless fits image.
+        output_fits_file (bool, optional): Write out noiseless fits image.
+        write_region_file (bool, optional): Write out simple RA,Dec text file for DS9 region overlay
+    """
     coordinate_table = Simbad.query_object(field_target_name)
     field_coordinates = SkyCoord(coordinate_table['RA'][0],
                                  coordinate_table['DEC'][0],
@@ -113,9 +152,9 @@ def create_noiseless_image(exptime=0.005 * u.second,
                          format='ascii.fast_no_header',
                          include_names=['_RAJ2000', '_DEJ2000'])
 
-    image_data = make_noiseless_image(imager,
-                                      imager_filter_name,
-                                      star_table)
+    image_data = make_noiseless_data(imager,
+                                     imager_filter_name,
+                                     star_table)
 
     if output_fits_file:
         image_data.write(output_fits_filename, overwrite=True)
@@ -125,4 +164,4 @@ def create_noiseless_image(exptime=0.005 * u.second,
 
 
 if __name__ == '__main__':
-    create_noiseless_image()
+    generate_noiseless_image()
