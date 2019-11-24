@@ -16,4 +16,21 @@ It will eventually:
  - record processing speed (e.g. processing at X FPS)
  - randomly dim stars to mimic a occultation
 
- 
+## How to run it
+
+Two ways:
+
+```python
+from generate_images import ImageStream
+i = ImageStream()
+next(i)
+next(i)
+```
+
+or:
+
+```python
+from generate_images import ImageStream
+for i in ImageStream():
+   print(i)
+```
