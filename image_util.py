@@ -156,6 +156,12 @@ def generate_noiseless_image(gunagala_config_filename,
                          format='ascii.fast_no_header',
                          include_names=['_RAJ2000', '_DEJ2000'])
 
+    # gunagala doesn't handle analytical PSFs yet
+    # imager.make_noiseless_image(field_coordinates,
+    #                            exptime,
+    #                            imager_filter_name,
+    #                            stars=None)
+
     image_data = make_noiseless_data(imager,
                                      imager_filter_name,
                                      star_table)
