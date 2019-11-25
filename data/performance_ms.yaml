@@ -84,7 +84,7 @@ cameras:
         resolution: 4656, 3520 # pixel
         read_noise: 2.5 # electron / pixel
         dark_current: 0.008 # electron / (second * pixel)
-        QE: ZWO_QE.csv
+        QE: ZWO_QE_asi1600.csv
         minimum_exposure: 0.000032 # second
 
     zwo_asi183mmpro: # ASI1600MM - Note: gain is variable & changes effective read noise, dynamic range. These are near max values.
@@ -97,7 +97,7 @@ cameras:
         resolution: 5496, 3672 # pixel
         read_noise: 1.6 # electron / pixel
         dark_current: 0.00298 # electron / (second * pixel)
-        QE: ZWO_QE.csv #  --- Adopting from zwo
+        QE: ZWO_QE_asi1600.csv #  --- Adopting from zwo
         minimum_exposure: 0.000032 # second  --- Adopting from zwo
 
     cis115: # e2v CIS115 'Sirius' back side illuminated CMOS image sensor

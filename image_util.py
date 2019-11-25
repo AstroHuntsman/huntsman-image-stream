@@ -1,5 +1,7 @@
 """Image utilities.
 """
+import os
+
 from astroquery.vizier import Vizier
 from astroquery.simbad import Simbad
 
@@ -11,7 +13,6 @@ from astropy.nddata import CCDData
 
 from gunagala.imager import create_imagers
 from gunagala.config import load_config
-import gunagala.psf
 
 from photutils.datasets import make_gaussian_sources_image
 
@@ -102,10 +103,10 @@ def make_noiseless_data(imager,
     return(noiseless)
 
 
-def generate_noiseless_image(exptime=0.005 * u.second,
+def generate_noiseless_image(gunagala_config_filename,
+                             exptime=0.005 * u.second,
                              snr_limit=1.,
                              gunagala_imager_name='one_zwo_canon_full_moon',
-                             gunagala_config_filename='/Users/lspitler/prog/GitHub/huntsman-ms/resources/performance_ms.yaml',
                              imager_filter_name='g',
                              field_target_name='fornax cluster',
                              output_fits_filename='out_noiseless.fits',
@@ -125,6 +126,7 @@ def generate_noiseless_image(exptime=0.005 * u.second,
         write_region_file (bool, optional): Write out simple RA,Dec text file for DS9 region overlay
     """
 
+    print(gunagala_config_filename)
     exptime = exptime.to(u.second)
     coordinate_table = Simbad.query_object(field_target_name)
     field_coordinates = SkyCoord(coordinate_table['RA'][0],
@@ -165,4 +167,11 @@ def generate_noiseless_image(exptime=0.005 * u.second,
 
 
 if __name__ == '__main__':
-    generate_noiseless_image()
+    """Test out main utilities: make noiseless and make noisy."""
+    noiseless_image, imager = generate_noiseless_image(exptime=0.005 * u.second,
+                                                       output_fits_file=True,
+                                                       gunagala_config_filename='/Users/lspitler/Documents/huntsman-image-stream/data/performance_ms.yaml')
+
+    real_data = imager.make_image_real(noiseless_image,
+                                       0.005 * u.second)
+    real_data.write('out_real.fits', overwrite=True)
