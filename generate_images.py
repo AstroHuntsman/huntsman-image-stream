@@ -8,13 +8,15 @@ class ImageStream:
     # From https://treyhunner.com/2018/06/how-to-make-an-iterator-in-python/
 
     def __init__(self,
+                 gunagala_config_filename='/Users/lspitler/Downloads/performance_detailed.yaml',
                  fraction_of_field=1,
                  exptime=0.005 * u.s,
                  fps=20,
                  n_cameras=1
                  ):
         print('Preparing noiseless image - this will take a minute or so')
-        self.noiseless_image, self.imager = generate_noiseless_image(exptime=exptime)
+        self.noiseless_image, self.imager = generate_noiseless_image(
+            gunagala_config_filename=gunagala_config_filename, exptime=exptime)
         self.exptime = exptime
         print('Created noiseless image - ready to run iterator')
 
