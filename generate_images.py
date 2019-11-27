@@ -8,7 +8,7 @@ class ImageStream:
     # From https://treyhunner.com/2018/06/how-to-make-an-iterator-in-python/
 
     def __init__(self,
-                 gunagala_config_filename='/Users/lspitler/Documents/huntsman-image-stream/data/performance_ms.yaml',
+                 gunagala_config_filename='/Users/lspitler/Downloads/performance_detailed.yaml',
                  fraction_of_field=1,
                  exptime=0.005 * u.s,
                  fps=20,

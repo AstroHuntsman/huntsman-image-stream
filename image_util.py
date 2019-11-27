@@ -176,7 +176,7 @@ if __name__ == '__main__':
     """Test out main utilities: make noiseless and make noisy."""
     noiseless_image, imager = generate_noiseless_image(exptime=0.005 * u.second,
                                                        output_fits_file=True,
-                                                       gunagala_config_filename='/Users/lspitler/Documents/huntsman-image-stream/data/performance_ms.yaml')
+                                                       gunagala_config_filename='/Users/lspitler/Downloads/performance_detailed.yaml')
 
     real_data = imager.make_image_real(noiseless_image,
                                        0.005 * u.second)
