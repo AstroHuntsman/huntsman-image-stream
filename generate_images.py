@@ -1,5 +1,7 @@
 """Python generator synthetic image stream.
 """
+import sys
+
 import astropy.units as u
 
 from image_util import generate_noiseless_image
@@ -26,8 +28,8 @@ class ImageStream:
     # From https://treyhunner.com/2018/06/how-to-make-an-iterator-in-python/
 
     def __init__(self,
+                 gunagala_config_filename,
                  num_frames=10,
-                 gunagala_config_filename='/Users/lspitler/Downloads/performance_detailed.yaml',
                  imager_filter_name='g',
                  exptime=0.005 * u.s,
                  flash_list=None,
@@ -36,8 +38,8 @@ class ImageStream:
         """Init function to setup the generator.
 
         Args:
+            gunagala_config_filename (str): absolute path to gunagala configuration file.
             num_frames (int, optional): Number of frames to be generated.
-            gunagala_config_filename (str, optional): absolute path to gunagala configuration file.
             imager_filter_name (str, optional): Imaging filter name.
             exptime (astropy.Quantity, optional): Exposure time in u.seconds.
             flash_list (list, optional): List of flash info tuples (x, y, S/N, frame #).
@@ -142,8 +144,17 @@ class ImageStream:
 if __name__ == '__main__':
     """Test the stream generator. Produce 1 flash."""
 
+    if len(sys.argv) < 2:
+        print(
+            '\n\nERROR, Usage:\npython generate_images.py [absolute_path_to_gunagala_configuration_file]\n\n')
+        sys.exit(1)
+
+    gunagala_config_filename = sys.argv[1]
+
     # (x_location, y_location, signal_to_noise, frame_no)
     flash_list = [(100, 100, 1000, 3), (1000, 1000, 1000, 2)]
 
-    for i, image in enumerate(ImageStream(num_frames=5, flash_list=flash_list)):
+    for i, image in enumerate(ImageStream(num_frames=5,
+                                          gunagala_config_filename=gunagala_config_filename,
+                                          flash_list=flash_list)):
         image.write(f'out_synth_{i+1}.fits', overwrite=True)

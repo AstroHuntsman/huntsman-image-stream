@@ -1,6 +1,7 @@
 """Image utilities.
 """
 import os
+import sys
 
 from astroquery.vizier import Vizier
 from astroquery.simbad import Simbad
@@ -126,7 +127,6 @@ def generate_noiseless_image(gunagala_config_filename,
         write_region_file (bool, optional): Write out simple RA,Dec text file for DS9 region overlay
     """
 
-    print(gunagala_config_filename)
     exptime = exptime.to(u.second)
     coordinate_table = Simbad.query_object(field_target_name)
     field_coordinates = SkyCoord(coordinate_table['RA'][0],
@@ -175,10 +175,18 @@ def generate_noiseless_image(gunagala_config_filename,
 
 if __name__ == '__main__':
     """Test out main utilities: make noiseless and make noisy."""
+
+    if len(sys.argv) < 2:
+        print(
+            '\n\nERROR, Usage:\npython generate_images.py [absolute_path_to_gunagala_configuration_file]\n\n')
+        sys.exit(1)
+
+    gunagala_config_filename = sys.argv[1]
+
     noiseless_image, imager = generate_noiseless_image(exptime=0.005 * u.second,
                                                        output_fits_file=True,
-                                                       gunagala_config_filename='/Users/lspitler/Downloads/performance_detailed.yaml')
+                                                       gunagala_config_filename=gunagala_config_filename)
 
     real_data = imager.make_image_real(noiseless_image,
                                        0.005 * u.second)
-    real_data.write('out_real.fits', overwrite=True)
+    real_data.write('out_sythetic.fits', overwrite=True)
