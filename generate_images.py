@@ -143,6 +143,7 @@ class ImageStream:
 
 if __name__ == '__main__':
     """Test the stream generator. Produce 1 flash."""
+    import numpy as np
 
     if len(sys.argv) < 2:
         print(
@@ -152,9 +153,17 @@ if __name__ == '__main__':
     gunagala_config_filename = sys.argv[1]
 
     # (x_location, y_location, signal_to_noise, frame_no)
-    flash_list = [(100, 100, 1000, 3), (1000, 1000, 1000, 2)]
+    flash_list = None
+    # flash_list = [(100, 100, 1000, 3), (1000, 1000, 1000, 2)]
 
-    for i, image in enumerate(ImageStream(num_frames=5,
+    ref_image = None
+    for i, image in enumerate(ImageStream(num_frames=50,
                                           gunagala_config_filename=gunagala_config_filename,
                                           flash_list=flash_list)):
+        if ref_image is None:
+            ref_image = image
+        else:
+            diff_image = CCDData((image.data.astype(np.int16) -
+                                  ref_image.data.astype(np.int16)) * image.unit, wcs=image.wcs)
+            diff_image.write(f'out_diff_{i+1}.fits', overwrite=True)
         image.write(f'out_synth_{i+1}.fits', overwrite=True)
