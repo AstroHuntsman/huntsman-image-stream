@@ -1,7 +1,5 @@
 # test output
-out_noiseless.fits
-out_real.fits
-
+out_*.fits
 
 # macos
 .DS_Store

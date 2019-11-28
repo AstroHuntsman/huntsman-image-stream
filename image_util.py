@@ -1,6 +1,7 @@
 """Image utilities.
 """
 import os
+import sys
 
 from astroquery.vizier import Vizier
 from astroquery.simbad import Simbad
@@ -54,7 +55,8 @@ def get_star_table(width,
 
 def make_noiseless_data(imager,
                         imager_filter_name,
-                        star_table):
+                        star_table,
+                        exptime):
     """Generate noiseless data of star field. Based upon
     gunagala.make_noiseless_data, which currently doesn't do PSFs
     very well.
@@ -68,15 +70,15 @@ def make_noiseless_data(imager,
         CCDData: Noiseless imaging data.
     """
     ucac_filter_name = f'{ imager_filter_name.upper() }mag'
+    naxis1, naxis2 = imager.wcs.pixel_shape
 
-    electrons = np.zeros((imager.wcs._naxis2,
-                          imager.wcs._naxis1)) * u.electron / (u.second * u.pixel)
+    electrons = np.zeros((naxis2, naxis1)) * u.electron / (u.second * u.pixel)
 
     # Calculate observed sky background
     sky_rate = imager.sky_rate[imager_filter_name]
     if hasattr(imager.sky, 'relative_brightness'):
         pixel_coords = imager.get_pixel_coords()
-        relative_sky = imager.sky.relative_brightness(pixel_coords, obs_time)
+        relative_sky = imager.sky.relative_brightness(pixel_coords, exptime)
         sky_rate = sky_rate * relative_sky
     electrons = electrons + sky_rate
 
@@ -94,8 +96,7 @@ def make_noiseless_data(imager,
     table['y_stddev'] = np.ones(len(pixel_coords[0]))  # PSF width = 1 pixels
     table['theta'] = np.zeros(len(pixel_coords[0]))
 
-    star_data = make_gaussian_sources_image((imager.wcs._naxis2,
-                                             imager.wcs._naxis1), table) * star_rate.unit / u.pixel
+    star_data = make_gaussian_sources_image((naxis2, naxis1), table) * star_rate.unit / u.pixel
 
     electrons = electrons + star_data
     noiseless = CCDData(electrons, wcs=imager.wcs)
@@ -126,7 +127,6 @@ def generate_noiseless_image(gunagala_config_filename,
         write_region_file (bool, optional): Write out simple RA,Dec text file for DS9 region overlay
     """
 
-    print(gunagala_config_filename)
     exptime = exptime.to(u.second)
     coordinate_table = Simbad.query_object(field_target_name)
     field_coordinates = SkyCoord(coordinate_table['RA'][0],
@@ -164,7 +164,8 @@ def generate_noiseless_image(gunagala_config_filename,
 
     image_data = make_noiseless_data(imager,
                                      imager_filter_name,
-                                     star_table)
+                                     star_table,
+                                     exptime)
 
     if output_fits_file:
         image_data.write(output_fits_filename, overwrite=True)
@@ -174,10 +175,18 @@ def generate_noiseless_image(gunagala_config_filename,
 
 if __name__ == '__main__':
     """Test out main utilities: make noiseless and make noisy."""
+
+    if len(sys.argv) < 2:
+        print(
+            '\n\nERROR, Usage:\npython generate_images.py [absolute_path_to_gunagala_configuration_file]\n\n')
+        sys.exit(1)
+
+    gunagala_config_filename = sys.argv[1]
+
     noiseless_image, imager = generate_noiseless_image(exptime=0.005 * u.second,
                                                        output_fits_file=True,
-                                                       gunagala_config_filename='/Users/lspitler/Downloads/performance_detailed.yaml')
+                                                       gunagala_config_filename=gunagala_config_filename)
 
     real_data = imager.make_image_real(noiseless_image,
                                        0.005 * u.second)
-    real_data.write('out_real.fits', overwrite=True)
+    real_data.write('out_sythetic.fits', overwrite=True)
